@@ -2,7 +2,7 @@
 
 深入原理版 · 以 FreeRTOS V10.4.6、单核 STM32F103 / Cortex-M3 为主要背景
 
-本笔记保留 xrbin 的 FreeRTOS 学习笔记的 20 章顺序，重新组织理论解释。重点是内核机制、因果关系和边界条件，不包含程序代码、函数原型、参数表或实验工程。少量内核对象名用于准确对应概念，不要求先背名字。
+这份个人学习笔记围绕 FreeRTOS 的内核机制、因果关系和边界条件展开，通过 20 个章节建立从任务调度到通信同步、时间与内存管理的完整知识体系。全文只讲理论概念，少量内核对象名用于准确对应机制，不要求先背名字。
 
 ## 阅读约定
 
@@ -41,7 +41,7 @@
 19. [Tickless 低功耗：在保持时间正确的前提下休眠](#ch19)
 20. [内存管理：对象生命周期与分配策略](#ch20)
 
-附录：[机制选型与跨章节推演](#appendix) · [参考资料与核对说明](#references)
+附录：[机制选型与跨章节推演](#appendix) · [版本范围与延伸阅读](#references)
 
 <a id="ch01"></a>
 
@@ -1162,22 +1162,17 @@ heap_4 能合并物理上相邻且都已释放的块，不能跨越仍被占用�
 
 <a id="references"></a>
 
-## 参考资料与核对说明
+## 版本范围与延伸阅读
 
-章节顺序参考 [xrbin / FreeRTOS_learning 的 FreeRTOS10.4.6 笔记](https://gitee.com/xrbin/FreeRTOS_learning/tree/master/FreeRTOS10.4.6/01-笔记)。正文为重新组织和撰写的解释，未搬运原笔记的图片、参数表或程序段。
+本笔记以 FreeRTOS V10.4.6、单核 STM32F103 / Cortex-M3 为主要背景，默认讨论抢占式调度。通知数组、事件位数量、优先级继承和异常处理等结论，需要结合正文给出的版本、配置与移植条件理解。
 
-版本相关的内部行为核对了同仓库移植工程所附内核，task.h 标识版本为 V10.4.6，读取的仓库提交为 2e84e2b8296c3153837b41d6424661fb027f90f4。可在 [该提交的内核目录](https://gitee.com/xrbin/FreeRTOS_learning/tree/2e84e2b8296c3153837b41d6424661fb027f90f4/FreeRTOS10.4.6/02-程序/01_FreeRTOS移植/Middlewares/FreeRTOS) 定位以下对应文件：
+复习时重点检查这些边界：运行任务与就绪列表的关系，显式挂起与无限等待的区别，唤醒与实际执行的区别，时间片与全局 Tick 边界，通知状态与通知计数，周期定时器的计划时间，以及内核对象回收与业务资源释放的区别。
 
-| 核对主题 | 对应实现 |
-|---|---|
-| 就绪与阻塞、待就绪列表、挂起调度器、优先级继承、通知等待 | tasks.c、task.h |
-| 队列阻塞、锁定记录、信号量、队列集 | queue.c、queue.h、semphr.h |
-| 事件组多等待者唤醒与统一清位、ISR 延后处理 | event_groups.c、event_groups.h |
-| 自动重装的计划时间、命令队列、过期周期处理 | timers.c、timers.h |
-| 链表插入、移除与游标 | list.c、list.h |
-| 五种内存分配策略 | portable/MemMang 中的 heap_1 至 heap_5 |
-| 任务首次启动、上下文切换、节拍、睡眠确认与时间补偿 | portable/RVDS/ARM_CM3 中的 port.c、portmacro.h |
+需要进一步核实具体机制时，可以查阅以下 FreeRTOS 官方资料：
 
-正文中的官方文档链接用于补充机制解释。官方网页可能随版本更新；涉及通知数组、事件位数量、优先级继承和具体移植的结论，均限定在正文写明的版本及背景内。
+- [Cortex-M 中断优先级与临界区](https://shkp.freertos.org/Documentation/02-Kernel/03-Supported-devices/04-Demos/ARM-Cortex/RTOS-Cortex-M3-M4)
+- [互斥量与优先级继承](https://freertos.org/Real-time-embedded-RTOS-mutexes.html)
+- [软件定时器与服务任务](https://wina.freertos.org/Documentation/02-Kernel/02-Kernel-features/05-Software-timers/01-Software-timers)
+- [内存管理方案](https://hop.freertos.org/Documentation/02-Kernel/02-Kernel-features/09-Memory-management/01-Memory-management)
 
-本次重写特别调整了原笔记中容易混淆的内容：协作式调度与 co-routine 的区别；运行任务与就绪列表的关系；显式挂起与无限等待；计数信号量容量；互斥量的继承含义；时间片与全局 Tick 边界；通知数组；周期定时器续期；以及动态存储与业务资源回收的区别。
+官方资料可能随版本更新。阅读时先确认适用版本和处理器架构，再与本笔记中的条件对应。
